@@ -1,0 +1,134 @@
+.form-box{
+    border:2px solid black;
+    padding:30px;
+    width: 50%;
+    margin-top: 30px;
+}
+.form-box-big{
+    border:2px solid black;
+    padding:50px;
+    width: 70%;
+    margin-top: 30px;
+}
+
+.row{
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
+.app-state{
+    background:gray;
+    width:50%;
+    margin-left:25%;
+}
+.state-radio{
+    margin-right:10%;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+         box-sizing: border-box;
+}
+
+/* =================== */
+/* PROGRESS BAR STYLES */
+/* =================== */
+.application_header{
+margin-left:18%;
+}
+.application_state {
+  width: 80%;
+  max-width: 800px;
+  margin: 30px auto 0;
+  display: table;
+  position: relative;
+  text-align: center;
+  margin-left: 20%;
+  margin-bottom:20px;
+
+}
+.application_state ul {
+  display: table-row;
+}
+.application_state ul li {
+  background-color: #d6d6d6; /* Default Bar Color */
+  display: table-cell;
+  position: relative;
+  line-height: 20px;
+  z-index: -3;
+  color: #FFF;
+  text-align: left;
+  transition: background-color 0.75s, color 0.5s;
+}
+.application_state ul li::before {
+  content:'';
+  width: 40px;
+  height: 40px;
+  color: #FFF;
+  line-height: 30px;
+  text-align: center;
+  left: -15px;
+  background-color: #d6d6d6;/* Default Circle Color */
+  border: solid 5px #d6d6d6;/* Default Circle Color */
+  index: -9;
+  position: absolute;
+  display: block;
+  top: -10px;
+  margin-right: auto;
+  margin-left: auto;
+  z-index: -1;
+
+  transition: background-color 0.75s, color 0.5s;
+
+
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+
+  -webkit-border-radius: 50%;
+     -moz-border-radius: 50%;
+          border-radius: 50%;
+}
+/* CURRENT STEP */
+.application_state ul li.current {
+  width: 100%;
+  z-index: -3;
+  color: #0e90d2;
+  position: relative;
+  display: inline-block;
+  height:21px;
+}
+.application_state ul li.current::before {
+  border: solid 5px #0e90d2;/* Current Step Circle Color */
+  background-color: #FFF;
+}
+/* COMPLETED STEPS */
+.application_state ul li.complete {
+  background-color: #0e90d2; /* Completed Step Bar Color */
+  transition: background-color 0.75s, color 0.5s;
+}
+.application_state ul li.complete::before {
+  background-color: #0e90d2; /* Completed Step Circle Color */
+  border: 5px solid transparent;
+  transition: background-color 0.75s, color 0.5s;
+}
+/* REMOVE FIRST STEP COLOR BAR LINE */
+.application_state ul li:last-of-type {
+  background-color: transparent;
+}
+.application_state ul li.current:last-of-type,
+.application_state ul li.complete:last-of-type  {
+  background-color: transparent;
+}
+
+@-webkit-keyframes pulse {
+    0% {-webkit-transform: scale(1, 1);}
+    50% {-webkit-transform: scale(1.1, 1.1);}
+    100% {-webkit-transform: scale(1, 1);}
+}
+@-keyframes pulse {
+    0% {transform: scale(1, 1);}
+    50% {transform: scale(1.1, 1.1);}
+    100% {transform: scale(1, 1);}
+}

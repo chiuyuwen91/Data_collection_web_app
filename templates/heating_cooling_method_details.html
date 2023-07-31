@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="app/main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script src="app/main.js"></script>
+    <style>
+      table {
+          width: 33%;
+          margin: 20px;
+      }
+
+      th, td {
+          text-align: center; 
+          border: 1px solid black; 
+      }
+
+      th {
+          background-color: #f2f2f2; 
+      }
+  </style>
+</head>
+
+
+<body>
+    <div class="container form-box">
+        <p style="text-align:right;"><a href="list_reports">Return to: View reports/query data</a></p>
+        <h1>Heating/Cooling Method Details</h1>
+        <div id="tables-container"></div>
+    </div>
+
+
+  <script>
+
+      const heaterCols = [
+        "Home Type",
+        "Heater Count",
+        "Average BTU",
+        "Average RPM",
+        "Most Common Energy Source"]; 
+      const airconCols = [
+        "Home Type",
+        "Air Conditioner Count",
+        "Average BTU",
+        "Average RPM",
+        "Average EER"];
+      const heatpumpCols = [
+        "Home Type",
+        "Heat Pump Count",
+        "Average BTU",
+        "Average RPM",
+        "Average SEER",
+        "Average HSPF"
+      ]
+      $(document).ready(function () {
+        $.ajax({
+            url:"/get_heating_cooling",
+            type:"GET",
+            dataType:"json",
+            success: function (data) {
+              createTable(data["Heater"], "Heater", heaterCols);
+              createTable(data["Air Conditioner"], "AirConditioner", airconCols);
+              createTable(data["Heat Pump"], "HeatPump", heatpumpCols);
+            },
+              error: function (jqXHR, textStatus, errorThrown) {
+                  console.error("Error: " + textStatus + ", " + errorThrown);
+              }
+        });
+
+      });
+
+      function createTable(data, category, cols) {
+          let table = "<h5>" + category + "</h5><table class='table'><thead><tr>";
+          for (const col of cols) {
+              table += "<th>" + col + "</th>";
+          }
+          table += "</tr></thead><tbody>";
+
+          for (const item of data) {
+              table += "<tr>";
+              for (const col of cols) {
+                  table += "<td>" + item[col] + "</td>";
+              }
+              table += "</tr>";
+          }
+
+          table += "</tbody></table>";
+
+          // Create a container div for each category and append the table inside it
+          let categoryContainer = $("<div></div>").html(table);
+          $("#tables-container").append(categoryContainer);
+      }
+  </script>
+</body>
+</html>

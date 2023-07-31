@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="app/main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script src="app/main.js"></script>
+    <style>
+        table {
+            width: 33%;
+            margin: 20px;
+        }
+
+        th, td {
+            text-align: center;
+            border: 1px solid black;
+        }
+
+        th {
+            background-color: #f2f2f2; 
+        }.error-tooltip {
+            position: absolute;
+            background-color: red;
+            color: white;
+            padding: 5px;
+            display: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container form-box">
+        <p style="text-align:right;"><a href="list_reports">Return to: View reports/query data</a></p>
+        <p class = "header" style = "font-size:30px"><b>Household Averages by Radius</b></p>
+        <form>
+            <label class="form-label" for="household_postal">Postal Code to Search:</label>
+            <input class="form-control" type="text" id="household_postal" name="postal" pattern="\d{5}" required>
+            <div class="error-tooltip" id="household_postal_error"></div><br>
+            <label class="form-label" for="radius_distance">Radius Distance:</label>
+            <select class="form-select" id="radius_distance" name="radius" required>
+                <option value="0">0</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="250">250</option>
+            </select><br>
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </form>
+        <div id = "radiusTable"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("form").submit(function (event) {
+                var postalForm = {
+                postal: $("#household_postal").val(),
+                radius: $("#radius_distance").val()
+                };
+
+                destinationUrl = "/radius_info"
+                console.log('Sending', postalForm, 'to', destinationUrl)
+                $.ajax({
+                    type: "GET",
+                    url: destinationUrl,
+                    data: postalForm,
+                    dataType: "json",
+                    contentType: 'application/json; charset=UTF-8'
+                }).done(function (data) {
+
+                    if (data.error == "Invalid postal code.") {
+                        var errorMessage = data.error;
+                        var errorTooltip = $("#household_postal_error");
+                        errorTooltip.text(errorMessage);
+                        errorTooltip.show(); 
+                        var household_postal_input = $("#household_postal");
+                        household_postal_input.on("click", function() {
+                            errorTooltip.hide();
+                        });
+                    }
+                    var keys = data.keys;
+                    var data = data.data;
+
+                    var radiusTable = ""
+                    if (data.length > 0) {
+                        var radiusTable = "<table class='table'>";
+                        radiusTable += '<tr><th>Radius Information</th><th>Value</th></tr>';
+                        for (var i = 0; i < keys.length; i++) {
+                            radiusTable += "<tr><td>" + keys[i] + "</td><td>" + data[i] + "</td></tr>";
+                        }
+                        radiusTable += "</table>";
+                    } else {
+                        radiusTable += "<p>No results found</p>"
+                    }
+                    
+
+                // Append the table to the designated container
+                $("#radiusTable").html(radiusTable);
+
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX request failed: " + textStatus + ", " + errorThrown);
+                });
+            event.preventDefault();
+            });
+
+        });
+
+
+    </script>
+</body>
+</html>

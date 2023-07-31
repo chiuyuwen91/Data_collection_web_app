@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="app/main.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <script src="app/main.js"></script>
+    <script>
+        function deletePowerGeneration(power_generation_number, email) {
+            console.log('ehllo')
+            var powerGenerationData = {
+                power_generation_number: power_generation_number,
+                email: email
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/delete_power_generation",
+                data: JSON.stringify(powerGenerationData),
+                dataType: "json",
+                contentType: "application/json; charset=UTF-8"
+            }).done(function(data) {
+                location.reload();
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX request failed: " + textStatus + ", " + errorThrown);
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container form-box">
+        <div class="row align-items-center application_header">
+            <div class="col-auto" style="margin-left: -5%;">Household Info</div>
+            <div class="col-auto" style="margin-left: 5%;">Appliances</div>
+            <div class="col-auto" style="margin-left: 5%;">Power Generation</div>
+            <div class="col-auto" style="margin-left: 7%;">Done</div>
+        </div>
+        <div class="application_state">
+            <ul>
+                <li class="complete"></li>
+                <li class="complete"></li>
+                <li class="current"></li>
+                <li></li>
+            </ul>
+        </div>
+        <h2>Power Generation</h2>
+        <p>You have added these to your household:</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Num</th>
+                    <th>Type</th>
+                    <th>Monthly kWh</th>
+                    <th>Battery kWh</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for power_generation in power_generations %}
+                <tr>
+                    <td>{{power_generation[1]}}</td>
+                    <td>{{power_generation[2]}}</td>
+                    <td>{{power_generation[3]}}</td>
+                    <td>{{'' if power_generation[4] == None else power_generation[4]}}</td>
+                    <td><button onclick="deletePowerGeneration({{power_generation[1]}}, '{{email}}')">delete</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <input type="hidden" id="email" name="email" value={{email}}><br>
+        <div class="row align-items-center">
+            <button class="btn btn-secondary" onclick="window.location.href='/add_power_generation?email={{email}}'">+ Add more power</button>
+        </div>
+        <div class="row align-items-right">
+            <button class="btn btn-primary btn-lg" onclick="window.location.href='/wrapping_up'" {{ 'disabled' if disable_finish else ''}}>Finish</button>
+        </div>
+    </div>
+</body>
+</html>

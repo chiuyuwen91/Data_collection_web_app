@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Appliance</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="app/main.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <script src="app/main.js"></script>
+  <script>
+    $(document).ready(function() {
+      $("#props-wrapper").hide()
+      $("#energy_efficiency_ratio").hide()
+      $("#energy_efficiency_ratio_label").hide()
+
+      $("#energy_source_air").hide();
+      $("#energy_source_air_label").hide();
+
+      $("#SEER").hide()
+      $("#SEER_label").hide()
+      $("#HSPF").hide()
+      $("#HSPF_label").hide()
+
+      $("#form").on("submit", function(event) {
+        event.preventDefault();
+
+        // Get form data
+        var applianceData = {
+          email: $("#email").val(),
+          appliance_type: $("#appliance_type").val(),
+          btu: $("#btu").val(),
+          manufacturer: $("#manufacturer").val(),
+          model_name: $("#model_name").val()
+        };
+
+        $("#fan_rpms").prop('required', applianceData.appliance_type === "AirHandler");
+        $("#energy_source_air").prop('required', applianceData.appliance_type === "AirHandler" && document.getElementById("heater").checked);
+        $("#energy_source_water").prop('required', applianceData.appliance_type === "WaterHeater");
+        $("#tank_size").prop('required', applianceData.appliance_type === "WaterHeater");
+
+        // Additional fields based on appliance type
+        if (applianceData.appliance_type === "AirHandler") {
+          applianceData.energy_efficiency_ratio = $("#energy_efficiency_ratio").val();
+          applianceData.energy_source_air = $("#energy_source_air").val();
+          applianceData.fan_rpms = $("#fan_rpms").val();
+
+          if (document.getElementById("air_conditioner").checked) {
+            applianceData.air_conditioner = true;
+            applianceData.energy_efficiency_ratio = $("#energy_efficiency_ratio").val();
+          }
+
+          if (document.getElementById("heater").checked) {
+            applianceData.heater = true;
+            applianceData.energy_source_air = $("#energy_source_air").val();
+          }
+
+          if (document.getElementById("heat_pump").checked) {
+            applianceData.heat_pump = true;
+            applianceData.SEER = $("#SEER").val();
+            applianceData.HSPF = $("#HSPF").val();
+          }
+        } else if (applianceData.appliance_type === "WaterHeater") {
+          applianceData.energy_source_water = $("#energy_source_water").val();
+          applianceData.tank_size = $("#tank_size").val();
+          applianceData.temperature = $("#temperature").val();
+        }
+
+        if (!document.querySelector('#form').reportValidity()) {
+          return false;
+        }
+
+        // Send AJAX post request
+        var destinationUrl = window.location.href + "appliances";
+        console.log('Sending', applianceData, 'to', destinationUrl);
+
+        $.ajax({
+          type: "POST",
+          url: destinationUrl,
+          data: JSON.stringify(applianceData),
+          dataType: "json",
+          contentType: "application/json; charset=UTF-8"
+        }).done(function(data) {
+          window.location.href='/list_appliance?email={{email}}'
+          console.log(data);
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+          console.error("AJAX request failed: " + textStatus + ", " + errorThrown);
+          window.location.href='/list_appliance?email={{email}}'
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="container form-box">
+    <div class="row align-items-center application_header">
+            <div class="col-auto" style="margin-left: -5%;">Household Info</div>
+            <div class="col-auto" style="margin-left: 5%;">Appliances</div>
+            <div class="col-auto" style="margin-left: 5%;">Power Generation</div>
+            <div class="col-auto" style="margin-left: 7%;">Done</div>
+        </div>
+    <div class="application_state">
+            <ul>
+                <li class="complete"></li>
+                <li class="current"></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </div>
+    <h2>Add Appliance</h2>
+    <div class="mb-3">
+        <p>Please provide details for the appliance:</p>
+
+  <form id="form" action="/add_appliance" method = "post"> 
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <label class="form-label" for="appliance_type">Appliance Type:</label>
+      </div>
+      <div class="col-auto">
+        <select class="form-select" id="appliance_type" name="appliance_type" required>
+          <option value="" selected disabled>Select an appliance type</option>
+          <option value="AirHandler">Air Handler</option>
+          <option value="WaterHeater">Water Heater</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="props-wrapper">
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <label class="form-label" for="btu">BTU:</label>
+        </div>
+        <div class="col-auto">
+          <input class="form-control" type="number" id="btu" name="btu" required>
+        </div>
+      </div>
+  
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <label class="form-label" for="manufacturer">Manufacturer:</label>
+        </div>
+        <div class="col-auto">
+          <select id="manufacturer" class="form-select" name="manufacturer" required>
+            <option value="" selected disabled>Select a manufacturer</option>
+            {% for manufacturer in manufacturers %}
+              <option value="{{manufacturer[0]}}">{{manufacturer[0]}} </option>
+            {% endfor %}
+            
+  
+          </select>
+        </div>
+      </div>
+  
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <label class="form-label" for="model_name">Model Name:</label>
+        </div>
+        <div class="col-6">
+          <input class="form-control" type="text" id="model_name" name="model_name">
+        </div>
+      </div>
+  
+      <!-- Additional fields for Air Handler -->
+      <div id="air_handler_fields" style="display: none;">
+          <div class="row">
+            <div class="col" style="border:1px solid black; padding:20px;">
+                <input type="checkbox" id="air_conditioner" name="air_conditioner" value="Air Conditioner" onclick="airConditionerCheckbox()">
+                <label class="form-label" for="air_conditioner">Air Conditioner</label><br>
+                <input type="checkbox" id="heater" name="heater" value="Heater" onclick="heaterCheckbox()">
+                <label class="form-label" for="heater">Heater</label><br>
+                <input type="checkbox" id="heat_pump" name="heat_pump" value="Heat Pump" onclick="heatPumpCheckbox()">
+                <label class="form-label" for="heat_pump">Heat Pump</label>
+            </div>
+  
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <label class="form-label" for="fan_rpms">Fan RPMs:</label>
+              </div>
+            <div class="col-auto">
+                <input class="form-control" type="number" id="fan_rpms" name="fan_rpms">
+              </div>
+            </div>
+  
+            <div class="col-6">
+              <label class="form-label" for="energy_efficiency_ratio" id="energy_efficiency_ratio_label">Energy Efficiency Ratio:</label>
+              <input class="form-control" oninput="setCustomValidity('')" oninvalid="setCustomValidity('Please enter number to tenth decimal point.')" pattern="[0-9]+([.][0-9])" id="energy_efficiency_ratio" name="energy_efficiency_ratio">
+            </div>
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <label class="form-label" for="energy_source_air" id="energy_source_air_label">Energy Source:</label>
+              </div>
+              <div class="col-auto">
+                <select class="form-select" id="energy_source_air" name="energy_source_air">
+                  <option value="" selected disabled>Select an energy source</option>
+                  <option value="electric">Electric</option>
+                  <option value="gas">Gas</option>
+                  <option value="solar">Thermosolar</option>
+                </select>
+              </div>
+              <div class="col-2">
+              </div>
+            </div>
+            <div class="row">
+              <label class="form-label" for="SEER" id="SEER_label">Seasonal Energy Efficiency Ratio:</label><br>
+              <input class="form-control" oninput="setCustomValidity('')" oninvalid="setCustomValidity('Please enter number to tenth decimal point.')" pattern="[0-9]+([.][0-9])" id="SEER" name="SEER"><br>
+  
+              <label class="form-label" for="HSPF" id="HSPF_label">Heating Seasonal Performance Factor:</label><br>
+              <input class="form-control" oninput="setCustomValidity('')" oninvalid="setCustomValidity('Please enter number to tenth decimal point.')" pattern="[0-9]+([.][0-9])" id="HSPF" name="HSPF"><br>
+            </div>
+          </div>
+  
+      </div>
+  
+      <!-- Additional fields for Water Heater -->
+      <div id="water_heater_fields" style="display: none;">
+        <div class="row">
+          <div class="col">
+            <div class="row align-items-center">
+              <div class="col-6">
+                <label class="form-label" for="energy_source_water">Energy Source:</label>
+              </div>
+              <div class="col-auto">
+                <select class="form-select" id="energy_source_water" name="energy_source_water">
+                  <option value="" selected disabled>Select an energy source</option>
+                  <option value="electric">Electric</option>
+                  <option value="gas">Gas</option>
+                  <option value="fuel oil">Fuel oil</option>
+                  <option value="heat pump">Heat pump</option>
+                </select>
+              </div>
+            </div>
+            <div class="row align-items-center">
+              <div class="col-6">
+                <label class="form-label" for="tank_size">Tank Size (gallons):</label>
+              </div>
+              <div class="col-auto">
+                <input class="form-control" oninput="setCustomValidity('')" oninvalid="setCustomValidity('Please enter number to tenth decimal point.')" pattern="[0-9]+([.][0-9])" id="tank_size" name="tank_size">
+              </div>
+            </div>
+            <div class="row align-items-center">
+              <div class="col-6">
+                <label class="form-label" for="temperature">Temperature:</label>
+              </div>
+              <div class="col-auto">
+                  <input class="form-control" type="number" id="temperature" name="temperature">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+    <div  class="col-4">
+      <button class="btn btn-primary btn-lg">Add</button>
+    </div>
+
+    <input type="hidden" id="email" name="email" value={{email}}><br>
+  </form>
+
+
+  <script>
+    function airConditionerCheckbox() {
+      var checkBox = document.getElementById("air_conditioner");
+      $("#energy_efficiency_ratio").prop('required', checkBox.checked);
+      if (checkBox.checked) {
+        $("#energy_efficiency_ratio").show();
+        $("#energy_efficiency_ratio_label").show();
+      } else {
+        $("#energy_efficiency_ratio").hide()
+        $("#energy_efficiency_ratio_label").hide()
+      }
+    }
+
+    function heaterCheckbox() {
+      var checkBox = document.getElementById("heater");
+      $("#energy_source_air").prop('required', checkBox.checked);
+      if (checkBox.checked) {
+        $("#energy_source_air").show();
+        $("#energy_source_air_label").show();
+      } else {
+        $("#energy_source_air").hide()
+        $("#energy_source_air_label").hide()
+      }
+    }
+
+    function heatPumpCheckbox() {
+      var checkBox = document.getElementById("heat_pump");
+      $("#SEER").prop('required', checkBox.checked);
+      $("#HSPF").prop('required', checkBox.checked);
+      if (checkBox.checked) {
+        $("#SEER").show();
+        $("#SEER_label").show();
+        $("#HSPF").show();
+        $("#HSPF_label").show();
+      } else {
+        $("#SEER").hide()
+        $("#SEER_label").hide()
+        $("#HSPF").hide()
+        $("#HSPF_label").hide()
+      }
+    }
+    $("#appliance_type").change(function() {
+      var selectedType = $(this).val();
+
+      // Show/hide additional fields based on the selected appliance type
+      if (selectedType === "AirHandler") {
+        $("#props-wrapper").show()
+        $("#air_handler_fields").show();
+        $("#water_heater_fields").hide();
+      } else if (selectedType === "WaterHeater") {
+        $("#props-wrapper").show()
+        $("#air_handler_fields").hide();
+        $("#water_heater_fields").show();
+      } else {
+        $("#props-wrapper").hide()
+        $("#air_handler_fields").hide();
+        $("#water_heater_fields").hide();
+      }
+    });
+  </script>
+</body>
+</html>

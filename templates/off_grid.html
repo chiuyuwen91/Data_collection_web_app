@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="app/main.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script src="app/main.js"></script>
+    <style>
+        table {
+            width: 33%;
+            margin: 20px;
+        }
+
+        th, td {
+            text-align: center;
+            border: 1px solid black;
+        }
+
+        th {
+            background-color: #f2f2f2; 
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container form-box">
+        <p style="text-align:right;"><a href="list_reports">Return to: View reports/query data</a></p>
+        <p class = "header" style = "font-size:30px"><b>Off the Grid Dashboard</b></p>
+        <div id = "mostOffGridState"></div>
+        <div id = "averageBattery"></div>
+
+        <p style = "font-size:20px"><b>Power Generation Table</b></p>
+        <div id = "generationTable"></div>
+        <p style = "font-size:20px"><b>Household Type Table</b></p>
+        <div id = "householdTable"></div>
+        <p style = "font-size:20px"><b>Water Tank Size Table</b></p>
+        <div id = "waterTable"></div>
+        <p style = "font-size:20px"><b>Appliance Type Table</b></p>
+        <div id = "applianceTable"></div>
+
+
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+
+                url:"/off_grid_info",
+                type:"GET",
+                dataType:"json",
+                success: function (data) {
+
+                    /* -------- OFF GRID STATE -------- */
+                    var mostOffGridState = "<p> State with most off grid households is <b>" + data['most_off_grid'][0] + "</b> with a count of: <b>" + data['most_off_grid'][1] + "</b> households</p>"
+                    $("#mostOffGridState").html(mostOffGridState)
+
+                    /* -------- Average Battery -------- */
+                    var averageBattery = "<p> Average battery storage capacity for off grid households is <b>" + data['average_battery'] + " kWh </b></p>"
+                    $("#averageBattery").html(averageBattery)
+
+                    /* -------- Power Generation Types -------- */
+                    var generationData = data.generation_type_percents;
+                    var generationTable = '<table class="table">';
+                    generationTable += '<tr><th>Power Generation Type</th><th>Percentage of Households</th></tr>';
+                    for (var key in generationData) {
+                        if (generationData.hasOwnProperty(key)) {
+                            generationTable += '<tr><td>' + key + '</td><td>' + generationData[key] + '%</td></tr>';
+                        }
+                    }
+                    generationTable += '</table>';
+                    $("#generationTable").html(generationTable);
+
+                    /* -------- Household Types -------- */
+                    var householdData = data.household_type_percents;
+                    var householdTable = '<table class="table">';
+                    householdTable += '<tr><th>Household Type</th><th>Percentage of Households</th></tr>';
+                    for (var key in householdData) {
+                        if (householdData.hasOwnProperty(key)) {
+                            householdTable += '<tr><td>' + key + '</td><td>' + householdData[key] + '%</td></tr>';
+                        }
+                    }
+                    householdTable += '</table>';
+                    $("#householdTable").html(householdTable);
+
+                    /* -------- Water Tank Sizes -------- */
+                    var waterData = data.water_tank_sizes;
+                    var waterTable = '<table class="table">';
+                        waterTable += '<tr><th>Household Type</th><th>Average Water Tank Size in Gallons</th></tr>';
+                    for (var key in waterData) {
+                        if (waterData.hasOwnProperty(key)) {
+                            waterTable += '<tr><td>' + key + '</td><td>' + waterData[key] + '</td></tr>';
+                        }
+                    }
+                    waterTable += '</table>';
+                    $("#waterTable").html(waterTable);
+
+                    /* -------- Appliance Statistics -------- */
+                    var applianceData = data.appliance_stats;
+                    var applianceTable = '<table class="table">';
+                        applianceTable += '<tr><th>Appliance Type</th><th>Min BTU</th><th>AVG BTU</th><th>Max BTU</th></tr>';
+                    for (var key in applianceData) {
+                        if (applianceData.hasOwnProperty(key)) {
+                            applianceTable += '<tr><td>' + key + '</td><td>' + applianceData[key][0] + '</td><td>' + applianceData[key][1] + '</td><td>' + applianceData[key][2] + '</td></tr>';
+                        }
+                    }
+                    applianceTable += '</table>';
+                    $("#applianceTable").html(applianceTable);
+
+                    
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("Error: " + textStatus + ", " + errorThrown);
+                }
+            });
+
+        });
+
+
+    </script>
+</body>
+</html>

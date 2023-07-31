@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    function loadHtml(url) {
+        $.ajax({
+            url: url,
+            success: function(data) {
+                $("#content").html(data);
+            },
+            error: function() {
+                console.error("There was an error loading the file.");
+            }
+        });
+    }
+    
+    window.onload = function() {
+        loadHtml('/main_menu');
+    };
+    </script>
+</head>
+<body>
+    <div id="content"></div>
+</body>
